@@ -5,11 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SpeedTest</title>
 
-  <!-- SEO -->
-  <meta name="description" content="SpeedTest - Cek kecepatan internet, ping, jitter, ISP, dan lokasi secara realtime.">
+  <meta name="description" content="SpeedTest realtime dengan info ISP, IP, lokasi, ping, jitter, download & upload.">
 
   <!-- Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- LibreSpeed UI Script -->
+  <script src="https://librespeed.org/assets/js/speedtest.js"></script>
 
   <!-- CSS -->
   <link rel="stylesheet" href="./style.css">
@@ -17,105 +19,88 @@
 
 <body>
 
-  <!-- Background Glow -->
-  <div class="bg-glow"></div>
+<div class="bg-glow"></div>
 
-  <!-- Container -->
-  <div class="container">
+<div class="container">
 
-    <!-- Header -->
-    <header class="header">
-      <h1 class="logo">SpeedTest</h1>
-      <p class="subtitle">Realtime Network Analyzer</p>
-    </header>
+  <!-- HEADER -->
+  <header class="header">
+    <h1 class="logo">SpeedTest</h1>
+    <p class="subtitle">Realtime Network Analyzer</p>
+  </header>
 
-    <!-- Main Layout -->
-    <main class="main">
+  <!-- MAIN -->
+  <main class="main">
 
-      <!-- LEFT: Speed Meter -->
-      <section class="speed-section">
+    <!-- LEFT -->
+    <section class="speed-section">
 
-        <div class="speed-card">
+      <div class="speed-card">
 
-          <!-- Circle Meter -->
-          <div class="meter">
-            <div class="meter-inner">
-              <span id="speedValue">0</span>
-              <span class="unit">Mbps</span>
-            </div>
-          </div>
-
-          <!-- Status -->
-          <p id="statusText" class="status">Idle</p>
-
-          <!-- Buttons -->
-          <div class="controls">
-            <button id="startBtn" class="btn primary">Start Test</button>
-            <button id="stopBtn" class="btn secondary" disabled>Stop</button>
-          </div>
-
-        </div>
-
-      </section>
-
-      <!-- RIGHT: Info + Stats -->
-      <section class="info-section">
-
-        <!-- Network Info -->
-        <div class="card">
-          <h3>Network Info</h3>
-          <div class="info-grid">
-            <div><span>IP</span><p id="ip">-</p></div>
-            <div><span>ISP</span><p id="isp">-</p></div>
-            <div><span>Location</span><p id="location">-</p></div>
-            <div><span>Timezone</span><p id="timezone">-</p></div>
+        <div class="meter">
+          <div class="meter-inner">
+            <span id="speedValue">0</span>
+            <span class="unit">Mbps</span>
           </div>
         </div>
 
-        <!-- Stats -->
-        <div class="card">
-          <h3>Statistics</h3>
-          <div class="stats-grid">
-            <div>
-              <span>Ping</span>
-              <p id="ping">0 ms</p>
-            </div>
-            <div>
-              <span>Jitter</span>
-              <p id="jitter">0 ms</p>
-            </div>
-            <div>
-              <span>Download</span>
-              <p id="download">0 Mbps</p>
-            </div>
-            <div>
-              <span>Upload</span>
-              <p id="upload">0 Mbps</p>
-            </div>
-          </div>
+        <p id="statusText" class="status">Idle</p>
+
+        <div class="controls">
+          <button id="startBtn" class="btn primary">Start Test</button>
+          <button id="stopBtn" class="btn secondary" disabled>Stop</button>
         </div>
 
-        <!-- Graph -->
-        <div class="card">
-          <h3>Realtime Speed</h3>
-          <canvas id="speedChart"></canvas>
+      </div>
+
+    </section>
+
+    <!-- RIGHT -->
+    <section class="info-section">
+
+      <!-- NETWORK -->
+      <div class="card">
+        <h3>Network Info</h3>
+        <div class="info-grid">
+          <div><span>IP</span><p id="ip">-</p></div>
+          <div><span>ISP</span><p id="isp">-</p></div>
+          <div><span>Location</span><p id="location">-</p></div>
+          <div><span>Timezone</span><p id="timezone">-</p></div>
         </div>
+      </div>
 
-      </section>
+      <!-- STATS -->
+      <div class="card">
+        <h3>Statistics</h3>
+        <div class="stats-grid">
+          <div><span>Ping</span><p id="ping">0 ms</p></div>
+          <div><span>Jitter</span><p id="jitter">0 ms</p></div>
+          <div><span>Download</span><p id="download">0 Mbps</p></div>
+          <div><span>Upload</span><p id="upload">0 Mbps</p></div>
+        </div>
+      </div>
 
-    </main>
+      <!-- GRAPH -->
+      <div class="card">
+        <h3>Realtime Speed</h3>
+        <canvas id="speedChart"></canvas>
+      </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-      <p>© 2026 SpeedTest Tool</p>
-    </footer>
+    </section>
 
-  </div>
+  </main>
 
-  <!-- Scripts -->
-  <script src="./config.js"></script>
-  <script src="./api.js"></script>
-  <script src="./app.js"></script>
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p>© 2026 SpeedTest Tool</p>
+  </footer>
+
+</div>
+
+<!-- SCRIPTS -->
+<script src="./api.js"></script>
+<script src="./config.js"></script>
+<script src="./app.js"></script>
 
 </body>
 </html>
