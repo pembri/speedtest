@@ -14,32 +14,32 @@ const uploadEl = document.getElementById("upload");
 
 const meter = document.querySelector(".meter");
 
+const canvas = document.getElementById("speedChart");
+const ctx = canvas.getContext("2d");
+
 // ==============================
 // STATE
 // ==============================
-let st = null; // Speedtest instance
+let worker = null;
 let running = false;
 let graphData = [];
 
 // ==============================
-// CHART (CANVAS)
+// GRAPH
 // ==============================
-const canvas = document.getElementById("speedChart");
-const ctx = canvas.getContext("2d");
-
 function drawGraph() {
-  const width = canvas.width = canvas.offsetWidth;
-  const height = canvas.height = canvas.offsetHeight;
+  const w = canvas.width = canvas.offsetWidth;
+  const h = canvas.height = canvas.offsetHeight;
 
-  ctx.clearRect(0, 0, width, height);
+  ctx.clearRect(0, 0, w, h);
 
   ctx.beginPath();
   ctx.lineWidth = 2;
   ctx.strokeStyle = "#ff2a2a";
 
   graphData.forEach((val, i) => {
-    const x = (i / graphData.length) * width;
-    const y = height - (val / 200) * height;
+    const x = (i / graphData.length) * w;
+    const y = h - (val / 200) * h;
 
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
@@ -53,82 +53,57 @@ function drawGraph() {
 // ==============================
 function updateMeter(speed) {
   speedValue.textContent = speed.toFixed(1);
-
-  const degree = Math.min(speed * 2, 360);
-  meter.style.transform = `rotate(${degree / 10}deg)`;
+  const deg = Math.min(speed * 2, 360);
+  meter.style.transform = `rotate(${deg / 10}deg)`;
 }
 
 // ==============================
-// START TEST (REAL)
+// START TEST (WORKING)
 // ==============================
-async function startTest() {
+function startTest() {
   if (running) return;
 
   running = true;
   startBtn.disabled = true;
   stopBtn.disabled = false;
-  statusText.textContent = "Selecting server...";
+  statusText.textContent = "Starting...";
 
   graphData = [];
 
-  try {
-    const server = await getBestServer();
+  // 🔥 WORKER RESMI LIBRESPEED (PUBLIC)
+  worker = new Worker("https://librespeed.org/backend/garbage.js");
 
-    statusText.textContent = "Connecting...";
+  worker.postMessage({
+    url: "https://librespeed.org/backend/"
+  });
 
-    st = new Speedtest(); // dari LibreSpeed
+  worker.onmessage = (e) => {
+    const d = e.data;
 
-    st.setParameter("telemetry_level", "basic");
-    st.setParameter("url_dl", server.url + "garbage.php");
-    st.setParameter("url_ul", server.url + "empty.php");
-    st.setParameter("url_ping", server.url + "empty.php");
-    st.setParameter("url_getIp", server.url + "getIP.php");
+    if (!running) return;
 
-    // ==============================
-    // UPDATE LOOP
-    // ==============================
-    st.onupdate = function (data) {
-      if (!running) return;
+    const dl = parseFloat(d.dlStatus) || 0;
+    const ul = parseFloat(d.ulStatus) || 0;
+    const ping = parseFloat(d.pingStatus) || 0;
+    const jitter = parseFloat(d.jitterStatus) || 0;
 
-      const dl = Number(data.dlStatus) || 0;
-      const ul = Number(data.ulStatus) || 0;
-      const ping = Number(data.pingStatus) || 0;
-      const jitter = Number(data.jitterStatus) || 0;
+    statusText.textContent = d.testState || "Testing...";
 
-      updateMeter(dl);
+    updateMeter(dl);
 
-      pingEl.textContent = ping.toFixed(0) + " ms";
-      jitterEl.textContent = jitter.toFixed(1) + " ms";
-      downloadEl.textContent = dl.toFixed(1) + " Mbps";
-      uploadEl.textContent = ul.toFixed(1) + " Mbps";
+    pingEl.textContent = ping.toFixed(0) + " ms";
+    jitterEl.textContent = jitter.toFixed(1) + " ms";
+    downloadEl.textContent = dl.toFixed(1) + " Mbps";
+    uploadEl.textContent = ul.toFixed(1) + " Mbps";
 
-      graphData.push(dl);
-      if (graphData.length > 60) graphData.shift();
+    graphData.push(dl);
+    if (graphData.length > 60) graphData.shift();
 
-      drawGraph();
-    };
+    drawGraph();
+  };
 
-    // ==============================
-    // STATE CHANGE
-    // ==============================
-    st.onend = function () {
-      statusText.textContent = "Finished";
-      running = false;
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-    };
-
-    st.onstatuschange = function (s) {
-      statusText.textContent = s;
-    };
-
-    st.start();
-
-  } catch (err) {
-    console.error(err);
-    statusText.textContent = "Error";
-    stopTest();
-  }
+  // auto stop (biar nggak stuck)
+  setTimeout(stopTest, 15000);
 }
 
 // ==============================
@@ -137,12 +112,13 @@ async function startTest() {
 function stopTest() {
   if (!running) return;
 
+  running = false;
+
   try {
-    st.abort();
+    worker.terminate();
   } catch {}
 
-  running = false;
-  statusText.textContent = "Stopped";
+  statusText.textContent = "Finished";
   startBtn.disabled = false;
   stopBtn.disabled = true;
 }
@@ -150,14 +126,14 @@ function stopTest() {
 // ==============================
 // EVENTS
 // ==============================
-startBtn.addEventListener("click", startTest);
-stopBtn.addEventListener("click", stopTest);
+startBtn.onclick = startTest;
+stopBtn.onclick = stopTest;
 
 // ==============================
 // INIT
 // ==============================
-window.addEventListener("load", () => {
+window.onload = () => {
   if (typeof loadNetworkInfo === "function") {
     loadNetworkInfo();
   }
-});
+};
