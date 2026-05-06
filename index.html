@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpeedTest</title>
+
+  <!-- SEO -->
+  <meta name="description" content="SpeedTest - Cek kecepatan internet, ping, jitter, ISP, dan lokasi secara realtime.">
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+
+  <!-- Background Glow -->
+  <div class="bg-glow"></div>
+
+  <!-- Container -->
+  <div class="container">
+
+    <!-- Header -->
+    <header class="header">
+      <h1 class="logo">SpeedTest</h1>
+      <p class="subtitle">Realtime Network Analyzer</p>
+    </header>
+
+    <!-- Main Layout -->
+    <main class="main">
+
+      <!-- LEFT: Speed Meter -->
+      <section class="speed-section">
+
+        <div class="speed-card">
+
+          <!-- Circle Meter -->
+          <div class="meter">
+            <div class="meter-inner">
+              <span id="speedValue">0</span>
+              <span class="unit">Mbps</span>
+            </div>
+          </div>
+
+          <!-- Status -->
+          <p id="statusText" class="status">Idle</p>
+
+          <!-- Buttons -->
+          <div class="controls">
+            <button id="startBtn" class="btn primary">Start Test</button>
+            <button id="stopBtn" class="btn secondary" disabled>Stop</button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- RIGHT: Info + Stats -->
+      <section class="info-section">
+
+        <!-- Network Info -->
+        <div class="card">
+          <h3>Network Info</h3>
+          <div class="info-grid">
+            <div><span>IP</span><p id="ip">-</p></div>
+            <div><span>ISP</span><p id="isp">-</p></div>
+            <div><span>Location</span><p id="location">-</p></div>
+            <div><span>Timezone</span><p id="timezone">-</p></div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="card">
+          <h3>Statistics</h3>
+          <div class="stats-grid">
+            <div>
+              <span>Ping</span>
+              <p id="ping">0 ms</p>
+            </div>
+            <div>
+              <span>Jitter</span>
+              <p id="jitter">0 ms</p>
+            </div>
+            <div>
+              <span>Download</span>
+              <p id="download">0 Mbps</p>
+            </div>
+            <div>
+              <span>Upload</span>
+              <p id="upload">0 Mbps</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Graph -->
+        <div class="card">
+          <h3>Realtime Speed</h3>
+          <canvas id="speedChart"></canvas>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>© 2026 SpeedTest Tool</p>
+    </footer>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="./config.js"></script>
+  <script src="./api.js"></script>
+  <script src="./app.js"></script>
+
+</body>
+</html>
