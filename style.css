@@ -1,289 +1,231 @@
-/* =========================
-   RESET & BASE
-========================= */
+/* --- CSS VARIABLES --- */
+:root {
+    --bg-main: #0a0505;
+    --bg-card: #140a0a;
+    --text-main: #ffffff;
+    --text-muted: #888888;
+    --accent-red: #ff2a2a;
+    --accent-red-hover: #d11f1f;
+    --btn-secondary: #222222;
+    --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --gauge-progress: 0deg; /* Dikontrol via JS */
+}
+
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-  background: #0a0a0a;
-  color: #ffffff;
-  overflow-x: hidden;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: var(--font-family);
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
 }
 
-/* =========================
-   BACKGROUND GLOW
-========================= */
-.bg-glow {
-  position: fixed;
-  width: 700px;
-  height: 700px;
-  background: radial-gradient(circle, rgba(255,0,0,0.18), transparent 70%);
-  top: -150px;
-  left: -150px;
-  filter: blur(120px);
-  z-index: 0;
-}
-
-/* =========================
-   CONTAINER
-========================= */
 .container {
-  position: relative;
-  z-index: 2;
-  max-width: 1400px;
-  margin: auto;
-  padding: 20px;
+    width: 100%;
+    max-width: 500px; /* Lebar optimal untuk mobile & desktop */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
-/* =========================
-   HEADER
-========================= */
-.header {
-  text-align: center;
-  margin-bottom: 30px;
+/* --- HEADER --- */
+header {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 10px;
 }
 
-.logo {
-  font-size: 28px;
-  font-weight: 700;
-  color: #ff2a2a;
-  letter-spacing: 1px;
+header h1 {
+    color: var(--accent-red);
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 1px;
 }
 
-.subtitle {
-  font-size: 13px;
-  color: #999;
-  margin-top: 4px;
+header p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
 }
 
-/* =========================
-   MAIN LAYOUT
-========================= */
-.main {
-  display: flex;
-  gap: 20px;
+/* --- CARDS --- */
+.card {
+    background-color: var(--bg-card);
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 42, 42, 0.05);
 }
 
-/* =========================
-   LEFT - SPEED
-========================= */
-.speed-section {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.card-title {
+    color: var(--accent-red);
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    font-weight: 700;
 }
 
-.speed-card {
-  width: 100%;
-  max-width: 420px;
-  padding: 30px;
-  border-radius: 20px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,0,0,0.15);
-  backdrop-filter: blur(12px);
-  text-align: center;
+/* --- GAUGE METER --- */
+.gauge-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
 }
 
-/* =========================
-   METER
-========================= */
-.meter {
-  width: 230px;
-  height: 230px;
-  margin: 0 auto 20px;
-  border-radius: 50%;
-  border: 6px solid rgba(255,0,0,0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  transition: transform 0.2s linear;
+.gauge-container {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    margin-bottom: 20px;
 }
 
-.meter::before {
-  content: "";
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  border: 6px solid transparent;
-  border-top: 6px solid #ff2a2a;
-  transform: rotate(0deg);
+/* Lingkaran Gauge menggunakan conic-gradient */
+.gauge {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent-red) var(--gauge-progress), #2a1111 var(--gauge-progress));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background 0.2s ease-out;
 }
 
-.meter-inner {
-  text-align: center;
+/* Lingkaran dalam untuk membuat bentuk donat */
+.gauge-center {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 200px;
+    height: 200px;
+    background-color: var(--bg-card);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
 }
 
-#speedValue {
-  font-size: 44px;
-  font-weight: 700;
+.speed-value {
+    font-size: 3.5rem;
+    font-weight: bold;
+    line-height: 1;
 }
 
-.unit {
-  display: block;
-  font-size: 13px;
-  color: #aaa;
+.speed-unit {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-top: 5px;
 }
 
-/* =========================
-   STATUS
-========================= */
-.status {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #ff2a2a;
+.status-text {
+    color: var(--accent-red);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+    text-transform: capitalize;
 }
 
-/* =========================
-   BUTTONS
-========================= */
-.controls {
-  margin-top: 20px;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
+/* --- BUTTONS --- */
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    width: 100%;
 }
 
 .btn {
-  padding: 10px 20px;
-  border-radius: 10px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s;
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
 }
 
-.btn.primary {
-  background: #ff2a2a;
-  color: #fff;
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
-.btn.primary:hover {
-  background: #ff4444;
+.btn-primary {
+    background-color: var(--accent-red);
+    color: white;
 }
 
-.btn.secondary {
-  background: #1a1a1a;
-  color: #aaa;
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--accent-red-hover);
 }
 
-.btn.secondary:hover {
-  background: #2a2a2a;
+.btn-secondary {
+    background-color: var(--btn-secondary);
+    color: var(--text-muted);
 }
 
-/* =========================
-   RIGHT PANEL
-========================= */
-.info-section {
-  flex: 1.5;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.btn-secondary:hover:not(:disabled) {
+    background-color: #333;
+    color: white;
 }
 
-/* =========================
-   CARD
-========================= */
-.card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,0,0,0.15);
-  border-radius: 16px;
-  padding: 20px;
-  backdrop-filter: blur(12px);
-}
-
-.card h3 {
-  margin-bottom: 15px;
-  font-size: 15px;
-  color: #ff2a2a;
-}
-
-/* =========================
-   INFO GRID
-========================= */
+/* --- NETWORK INFO & STATS GRID --- */
 .info-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-}
-
-.info-grid span {
-  font-size: 11px;
-  color: #888;
-}
-
-.info-grid p {
-  font-size: 14px;
-  margin-top: 3px;
-}
-
-/* =========================
-   STATS GRID
-========================= */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-}
-
-.stats-grid span {
-  font-size: 11px;
-  color: #888;
-}
-
-.stats-grid p {
-  font-size: 18px;
-  font-weight: 600;
-  margin-top: 4px;
-}
-
-/* =========================
-   GRAPH
-========================= */
-canvas {
-  width: 100%;
-  height: 200px;
-}
-
-/* =========================
-   FOOTER
-========================= */
-.footer {
-  margin-top: 30px;
-  text-align: center;
-  font-size: 12px;
-  color: #666;
-}
-
-/* =========================
-   MOBILE
-========================= */
-@media (max-width: 768px) {
-
-  .main {
+    display: flex;
     flex-direction: column;
-  }
+    gap: 15px;
+}
 
-  .meter {
-    width: 180px;
-    height: 180px;
-  }
+.info-item {
+    display: flex;
+    flex-direction: column;
+}
 
-  #speedValue {
-    font-size: 34px;
-  }
-
-  .info-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .stats-grid {
+.stats-grid {
+    display: grid;
     grid-template-columns: 1fr 1fr;
-  }
+    gap: 20px;
+}
 
+.stat-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.label {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 5px;
+}
+
+.value {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* --- FOOTER --- */
+footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 10px;
+    padding-bottom: 20px;
+}
+
+/* --- RESPONSIVE DESKTOP --- */
+@media (min-width: 768px) {
+    .container { max-width: 800px; }
+    /* Di desktop, Info dan Stats bersebelahan */
+    .card:nth-child(3), .card:nth-child(4) {
+        width: calc(50% - 10px);
+        display: inline-block;
+        vertical-align: top;
+    }
 }
