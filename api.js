@@ -1,59 +1,123 @@
-// ==============================
-// NETWORK INFO (FINAL - REAL)
-// ==============================
+/**
+ * SPEEDTEST API ENGINE
+ * Menangani pengambilan IP dan kalkulasi kecepatan jaringan.
+ */
 
-async function loadNetworkInfo() {
-  try {
-    // API utama
-    const res = await fetch("https://ipapi.co/json/");
-    if (!res.ok) throw new Error("API utama gagal");
+const NetworkAPI = {
+    // 1. Fetch IP & ISP Info
+    async fetchNetworkInfo() {
+        try {
+            const response = await fetch('https://ipapi.co/json/');
+            if (!response.ok) throw new Error('API Error');
+            const data = await response.json();
+            return {
+                ip: data.ip || 'Unknown',
+                isp: data.org || 'Unknown Provider',
+                location: `${data.city}, ${data.country_name}`,
+                timezone: data.timezone || 'Unknown'
+            };
+        } catch (error) {
+            console.error("Gagal mengambil info network:", error);
+            return null;
+        }
+    },
 
-    const data = await res.json();
+    // 2. Measure Ping & Jitter
+    async measurePing() {
+        const pingTimes = [];
+        const testUrl = 'https://cloudflare.com/cdn-cgi/trace'; // Endpoint cepat & stabil
 
-    setData({
-      ip: data.ip,
-      isp: data.org,
-      city: data.city,
-      country: data.country_name,
-      timezone: data.timezone
-    });
+        for (let i = 0; i < 5; i++) {
+            const start = performance.now();
+            try {
+                await fetch(testUrl + '?t=' + Math.random(), { mode: 'no-cors', cache: 'no-store' });
+                const end = performance.now();
+                pingTimes.push(end - start);
+            } catch (e) {
+                console.error("Ping error", e);
+            }
+        }
 
-  } catch (err) {
-    console.warn("Fallback ke API kedua...");
+        if (pingTimes.length === 0) return { ping: 0, jitter: 0 };
 
-    try {
-      // fallback API kedua
-      const res2 = await fetch("https://ipinfo.io/json");
-      const data2 = await res2.json();
+        const ping = Math.round(pingTimes.reduce((a, b) => a + b, 0) / pingTimes.length);
+        
+        // Kalkulasi Jitter (Rata-rata variansi antar ping)
+        let jitterSum = 0;
+        for (let i = 0; i < pingTimes.length - 1; i++) {
+            jitterSum += Math.abs(pingTimes[i] - pingTimes[i+1]);
+        }
+        const jitter = Math.round(jitterSum / (pingTimes.length - 1)) || 0;
 
-      const [city, country] = (data2.loc || "").split(",");
+        return { ping, jitter };
+    },
 
-      setData({
-        ip: data2.ip,
-        isp: data2.org,
-        city: data2.city || "-",
-        country: data2.country || "-",
-        timezone: data2.timezone || "-"
-      });
+    // 3. Measure Download Speed
+    async measureDownload(onProgress) {
+        // Menggunakan file gambar resolusi tinggi publik untuk test (~3MB)
+        const imageUrl = "https://images.unsplash.com/photo-1542204165-65bf26472b9b?ixlib=rb-1.2.1&w=3000&q=80";
+        const downloadSizeBits = 3000000 * 8; // Estimasi 3MB dalam bits
+        
+        const start = performance.now();
+        try {
+            // Simulasi proses progress (karena fetch biasa sulit track progress di static site)
+            let currentBits = 0;
+            const progressInterval = setInterval(() => {
+                const now = performance.now();
+                const durationInSeconds = (now - start) / 1000;
+                // Fake progress update for UI animation
+                currentBits += downloadSizeBits / 10; 
+                let currentMbps = (currentBits / durationInSeconds / 1000000).toFixed(1);
+                if(currentMbps > 0) onProgress(currentMbps);
+            }, 200);
 
-    } catch (err2) {
-      console.error("Semua API gagal:", err2);
+            await fetch(imageUrl + '&t=' + Math.random(), { cache: 'no-store' });
+            
+            clearInterval(progressInterval);
+            const end = performance.now();
+            const durationInSeconds = (end - start) / 1000;
+            const mbps = (downloadSizeBits / durationInSeconds / 1000000).toFixed(1);
+            
+            return parseFloat(mbps);
+        } catch (e) {
+            return 0;
+        }
+    },
+
+    // 4. Measure Upload Speed
+    async measureUpload(onProgress) {
+        // Membuat random data Blob (~2MB) untuk diupload
+        const dataSize = 2 * 1024 * 1024;
+        const uploadData = new Blob([new Uint8Array(dataSize)]);
+        const uploadSizeBits = dataSize * 8;
+        const testUrl = 'https://httpbin.org/post'; // Public POST endpoint
+
+        const start = performance.now();
+        try {
+            let currentBits = 0;
+            const progressInterval = setInterval(() => {
+                const now = performance.now();
+                const durationInSeconds = (now - start) / 1000;
+                currentBits += uploadSizeBits / 15; 
+                let currentMbps = (currentBits / durationInSeconds / 1000000).toFixed(1);
+                if(currentMbps > 0) onProgress(currentMbps);
+            }, 200);
+
+            await fetch(testUrl, {
+                method: 'POST',
+                body: uploadData,
+                mode: 'cors',
+                cache: 'no-store'
+            });
+
+            clearInterval(progressInterval);
+            const end = performance.now();
+            const durationInSeconds = (end - start) / 1000;
+            const mbps = (uploadSizeBits / durationInSeconds / 1000000).toFixed(1);
+            
+            return parseFloat(mbps);
+        } catch (e) {
+            return 0;
+        }
     }
-  }
-}
-
-// ==============================
-// SET DATA KE UI
-// ==============================
-function setData({ ip, isp, city, country, timezone }) {
-  document.getElementById("ip").textContent = ip || "-";
-  document.getElementById("isp").textContent = isp || "-";
-  document.getElementById("location").textContent =
-    (city || "-") + ", " + (country || "-");
-  document.getElementById("timezone").textContent = timezone || "-";
-}
-
-// ==============================
-// AUTO LOAD
-// ==============================
-window.addEventListener("load", loadNetworkInfo);
+};
