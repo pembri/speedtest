@@ -1,103 +1,85 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SpeedTest</title>
-
-  <meta name="description" content="SpeedTest realtime dengan info ISP, IP, lokasi, ping, jitter, download & upload.">
-
-  <!-- Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="./style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpeedTest - Realtime Network Analyzer</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+    <div class="container">
+        <header>
+            <h1>SpeedTest</h1>
+            <p>Realtime Network Analyzer</p>
+        </header>
 
-<div class="bg-glow"></div>
-
-<div class="container">
-
-  <!-- HEADER -->
-  <header class="header">
-    <h1 class="logo">SpeedTest</h1>
-    <p class="subtitle">Realtime Network Analyzer</p>
-  </header>
-
-  <!-- MAIN -->
-  <main class="main">
-
-    <!-- LEFT -->
-    <section class="speed-section">
-
-      <div class="speed-card">
-
-        <div class="meter">
-          <div class="meter-inner">
-            <span id="speedValue">0</span>
-            <span class="unit">Mbps</span>
-          </div>
+        <div class="card gauge-card">
+            <div class="gauge-container">
+                <div class="gauge" id="speedGauge"></div>
+                <div class="gauge-center">
+                    <div class="speed-value" id="currentSpeed">0</div>
+                    <div class="speed-unit">Mbps</div>
+                </div>
+            </div>
+            
+            <div class="status-text" id="testStatus">Idle</div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="btnStart">Start Test</button>
+                <button class="btn btn-secondary" id="btnStop" disabled>Stop</button>
+            </div>
         </div>
 
-        <p id="statusText" class="status">Idle</p>
-
-        <div class="controls">
-          <button id="startBtn" class="btn primary">Start Test</button>
-          <button id="stopBtn" class="btn secondary" disabled>Stop</button>
+        <div class="card">
+            <h2 class="card-title">Network Info</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="label">IP</span>
+                    <span class="value" id="netIp">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">ISP</span>
+                    <span class="value" id="netIsp">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Location</span>
+                    <span class="value" id="netLocation">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Timezone</span>
+                    <span class="value" id="netTimezone">-</span>
+                </div>
+            </div>
         </div>
 
-      </div>
-
-    </section>
-
-    <!-- RIGHT -->
-    <section class="info-section">
-
-      <!-- NETWORK -->
-      <div class="card">
-        <h3>Network Info</h3>
-        <div class="info-grid">
-          <div><span>IP</span><p id="ip">-</p></div>
-          <div><span>ISP</span><p id="isp">-</p></div>
-          <div><span>Location</span><p id="location">-</p></div>
-          <div><span>Timezone</span><p id="timezone">-</p></div>
+        <div class="card">
+            <h2 class="card-title">Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="label">Ping</span>
+                    <span class="value"><span id="statPing">0</span> ms</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Jitter</span>
+                    <span class="value"><span id="statJitter">0</span> ms</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Download</span>
+                    <span class="value"><span id="statDownload">0</span> Mbps</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Upload</span>
+                    <span class="value"><span id="statUpload">0</span> Mbps</span>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <!-- STATS -->
-      <div class="card">
-        <h3>Statistics</h3>
-        <div class="stats-grid">
-          <div><span>Ping</span><p id="ping">0 ms</p></div>
-          <div><span>Jitter</span><p id="jitter">0 ms</p></div>
-          <div><span>Download</span><p id="download">0 Mbps</p></div>
-          <div><span>Upload</span><p id="upload">0 Mbps</p></div>
-        </div>
-      </div>
+        <footer>
+            &copy; 2026 SpeedTest Tool
+        </footer>
+    </div>
 
-      <!-- GRAPH -->
-      <div class="card">
-        <h3>Realtime Speed</h3>
-        <canvas id="speedChart"></canvas>
-      </div>
-
-    </section>
-
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="footer">
-    <p>© 2026 SpeedTest Tool</p>
-  </footer>
-
-</div>
-
-<!-- SCRIPTS -->
-<script src="./api.js"></script>
-<script src="./config.js"></script>
-<script src="./app.js"></script>
-
+    <script src="api.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
