@@ -1,139 +1,128 @@
-// ==============================
-// ELEMENT
-// ==============================
-const startBtn = document.getElementById("startBtn");
-const stopBtn = document.getElementById("stopBtn");
+/**
+ * SPEEDTEST APP LOGIC
+ * Menangani UI, animasi Gauge, dan Alur Testing.
+ */
 
-const speedValue = document.getElementById("speedValue");
-const statusText = document.getElementById("statusText");
+document.addEventListener('DOMContentLoaded', () => {
+    // UI Elements
+    const btnStart = document.getElementById('btnStart');
+    const btnStop = document.getElementById('btnStop');
+    const currentSpeedEl = document.getElementById('currentSpeed');
+    const testStatusEl = document.getElementById('testStatus');
+    
+    // Stats Elements
+    const ipEl = document.getElementById('netIp');
+    const ispEl = document.getElementById('netIsp');
+    const locationEl = document.getElementById('netLocation');
+    const timezoneEl = document.getElementById('netTimezone');
+    
+    const pingEl = document.getElementById('statPing');
+    const jitterEl = document.getElementById('statJitter');
+    const downloadEl = document.getElementById('statDownload');
+    const uploadEl = document.getElementById('statUpload');
 
-const pingEl = document.getElementById("ping");
-const jitterEl = document.getElementById("jitter");
-const downloadEl = document.getElementById("download");
-const uploadEl = document.getElementById("upload");
+    let isTesting = false;
+    let gaugeInterval;
 
-const meter = document.querySelector(".meter");
+    // Inisialisasi: Ambil Info Jaringan saat web pertama dibuka
+    initNetworkInfo();
 
-const canvas = document.getElementById("speedChart");
-const ctx = canvas.getContext("2d");
+    async function initNetworkInfo() {
+        const info = await NetworkAPI.fetchNetworkInfo();
+        if (info) {
+            ipEl.innerText = info.ip;
+            ispEl.innerText = info.isp;
+            locationEl.innerText = info.location;
+            timezoneEl.innerText = info.timezone;
+        } else {
+            ipEl.innerText = "Error fetching data";
+        }
+    }
 
-// ==============================
-// STATE
-// ==============================
-let worker = null;
-let running = false;
-let graphData = [];
+    // Fungsi Animasi Gauge (Max limit visual = 100 Mbps)
+    function updateGauge(mbps) {
+        currentSpeedEl.innerText = mbps;
+        // Konversi mbps ke derajat (Max 360deg = full circle)
+        // Kita asumsikan 100 Mbps = 360 derajat secara visual agar animasi terlihat penuh
+        let degrees = (mbps / 100) * 360;
+        if (degrees > 360) degrees = 360; 
+        document.documentElement.style.setProperty('--gauge-progress', `${degrees}deg`);
+    }
 
-// ==============================
-// GRAPH
-// ==============================
-function drawGraph() {
-  const w = canvas.width = canvas.offsetWidth;
-  const h = canvas.height = canvas.offsetHeight;
+    function resetUI() {
+        updateGauge(0);
+        testStatusEl.innerText = "Idle";
+        testStatusEl.style.color = "var(--accent-red)";
+        pingEl.innerText = "0";
+        jitterEl.innerText = "0";
+        downloadEl.innerText = "0";
+        uploadEl.innerText = "0";
+    }
 
-  ctx.clearRect(0, 0, w, h);
+    // MAIN TEST LOGIC
+    async function runSpeedTest() {
+        isTesting = true;
+        btnStart.disabled = true;
+        btnStop.disabled = false;
+        resetUI();
 
-  ctx.beginPath();
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = "#ff2a2a";
+        try {
+            // 1. PING & JITTER TEST
+            if (!isTesting) return;
+            testStatusEl.innerText = "Testing Ping...";
+            const { ping, jitter } = await NetworkAPI.measurePing();
+            pingEl.innerText = ping;
+            jitterEl.innerText = jitter;
 
-  graphData.forEach((val, i) => {
-    const x = (i / graphData.length) * w;
-    const y = h - (val / 200) * h;
+            // 2. DOWNLOAD TEST
+            if (!isTesting) return;
+            testStatusEl.innerText = "Testing Download...";
+            testStatusEl.style.color = "#00e676"; // Hijau saat download
+            
+            const finalDownload = await NetworkAPI.measureDownload((liveMbps) => {
+                if(isTesting) updateGauge(liveMbps);
+            });
+            
+            if (!isTesting) return;
+            downloadEl.innerText = finalDownload;
+            updateGauge(0); // Reset visual sebelum masuk upload
 
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  });
+            // 3. UPLOAD TEST
+            if (!isTesting) return;
+            testStatusEl.innerText = "Testing Upload...";
+            testStatusEl.style.color = "#3498db"; // Biru saat upload
 
-  ctx.stroke();
-}
+            const finalUpload = await NetworkAPI.measureUpload((liveMbps) => {
+                if(isTesting) updateGauge(liveMbps);
+            });
+            
+            if (!isTesting) return;
+            uploadEl.innerText = finalUpload;
+            updateGauge(finalUpload); // Sisakan visual di angka terakhir
 
-// ==============================
-// METER
-// ==============================
-function updateMeter(speed) {
-  speedValue.textContent = speed.toFixed(1);
-  const deg = Math.min(speed * 2, 360);
-  meter.style.transform = `rotate(${deg / 10}deg)`;
-}
+            // SELESAI
+            testStatusEl.innerText = "Test Completed";
+            testStatusEl.style.color = "var(--text-muted)";
 
-// ==============================
-// START TEST (WORKING)
-// ==============================
-function startTest() {
-  if (running) return;
+        } catch (error) {
+            console.error("Test aborted or failed", error);
+            testStatusEl.innerText = "Test Error";
+        } finally {
+            isTesting = false;
+            btnStart.disabled = false;
+            btnStop.disabled = true;
+        }
+    }
 
-  running = true;
-  startBtn.disabled = true;
-  stopBtn.disabled = false;
-  statusText.textContent = "Starting...";
-
-  graphData = [];
-
-  // 🔥 WORKER RESMI LIBRESPEED (PUBLIC)
-  worker = new Worker("https://librespeed.org/backend/garbage.js");
-
-  worker.postMessage({
-    url: "https://librespeed.org/backend/"
-  });
-
-  worker.onmessage = (e) => {
-    const d = e.data;
-
-    if (!running) return;
-
-    const dl = parseFloat(d.dlStatus) || 0;
-    const ul = parseFloat(d.ulStatus) || 0;
-    const ping = parseFloat(d.pingStatus) || 0;
-    const jitter = parseFloat(d.jitterStatus) || 0;
-
-    statusText.textContent = d.testState || "Testing...";
-
-    updateMeter(dl);
-
-    pingEl.textContent = ping.toFixed(0) + " ms";
-    jitterEl.textContent = jitter.toFixed(1) + " ms";
-    downloadEl.textContent = dl.toFixed(1) + " Mbps";
-    uploadEl.textContent = ul.toFixed(1) + " Mbps";
-
-    graphData.push(dl);
-    if (graphData.length > 60) graphData.shift();
-
-    drawGraph();
-  };
-
-  // auto stop (biar nggak stuck)
-  setTimeout(stopTest, 15000);
-}
-
-// ==============================
-// STOP
-// ==============================
-function stopTest() {
-  if (!running) return;
-
-  running = false;
-
-  try {
-    worker.terminate();
-  } catch {}
-
-  statusText.textContent = "Finished";
-  startBtn.disabled = false;
-  stopBtn.disabled = true;
-}
-
-// ==============================
-// EVENTS
-// ==============================
-startBtn.onclick = startTest;
-stopBtn.onclick = stopTest;
-
-// ==============================
-// INIT
-// ==============================
-window.onload = () => {
-  if (typeof loadNetworkInfo === "function") {
-    loadNetworkInfo();
-  }
-};
+    // Event Listeners
+    btnStart.addEventListener('click', runSpeedTest);
+    
+    btnStop.addEventListener('click', () => {
+        isTesting = false;
+        btnStart.disabled = false;
+        btnStop.disabled = true;
+        testStatusEl.innerText = "Test Stopped";
+        testStatusEl.style.color = "var(--accent-red)";
+        updateGauge(0);
+    });
+});
